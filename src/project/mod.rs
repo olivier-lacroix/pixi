@@ -24,10 +24,10 @@ use async_once_cell::OnceCell as AsyncCell;
 pub use dependencies::{CondaDependencies, PyPiDependencies};
 pub use environment::Environment;
 use indexmap::Equivalent;
-use manifest::{EnvironmentName, Manifest};
+use manifest::{channel::PrioritizedChannel, EnvironmentName, Manifest};
 use miette::{IntoDiagnostic, NamedSource};
 use once_cell::sync::OnceCell;
-use rattler_conda_types::Version;
+use rattler_conda_types::{Channel, Version};
 use rattler_repodata_gateway::Gateway;
 use reqwest_middleware::ClientWithMiddleware;
 pub use solve_group::SolveGroup;
@@ -165,7 +165,6 @@ impl Project {
     }
 
     /// Constructs a project from a manifest.
-    /// Assumes the manifest is a Pixi manifest
     pub fn from_str(manifest_path: &Path, content: &str) -> miette::Result<Self> {
         let manifest = Manifest::from_str(manifest_path, content)?;
         Ok(Self::from_manifest(manifest))
@@ -469,6 +468,21 @@ impl Project {
                 .map(GroupedEnvironment::from),
         );
         environments.into_iter().collect()
+    }
+
+    /// Computes channels (as prioritized channels) from a list of strings, and the project's channel config
+    pub fn resolve_prioritized_channels(
+        &self,
+        channels: Vec<String>,
+    ) -> miette::Result<HashMap<String, PrioritizedChannel>> {
+        channels
+            .into_iter()
+            .map(|channel_str| {
+                Channel::from_str(&channel_str, self.config().channel_config())
+                    .map(|channel| (channel_str, PrioritizedChannel::from_channel(channel)))
+            })
+            .collect::<Result<HashMap<_, _>, _>>()
+            .into_diagnostic()
     }
 
     /// Returns true if the project contains any reference pypi dependencies.
