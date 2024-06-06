@@ -139,7 +139,7 @@ impl Project {
         let root = manifest
             .path
             .parent()
-            .expect("Path should always have a parent")
+            .expect("manifest path should always have a parent")
             .to_owned();
 
         let config = Config::load(&root);

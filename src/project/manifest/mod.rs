@@ -702,15 +702,6 @@ impl Manifest {
     {
         self.parsed.environments.find(name)
     }
-
-    /// Returns the solve group with the given name or `None` if it does not
-    /// exist.
-    pub fn solve_group<Q: ?Sized>(&self, name: &Q) -> Option<&SolveGroup>
-    where
-        Q: Hash + Equivalent<String>,
-    {
-        self.parsed.solve_groups.find(name)
-    }
 }
 
 /// Converts an array of Platforms to a non-empty Vec of Option<Platform>
