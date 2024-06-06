@@ -197,8 +197,6 @@ impl Manifest {
             .ok_or(GetFeatureError::FeatureDoesNotExist(feature_name.clone()))?
             .targets
             .resolve(platform)
-            .collect_vec()
-            .into_iter()
             .rev()
             .flat_map(|target| target.tasks.iter())
             .map(|(name, task)| (name.clone(), task))
