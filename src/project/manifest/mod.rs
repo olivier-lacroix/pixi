@@ -119,8 +119,9 @@ impl Borrow<ProjectManifest> for Manifest {
 impl Manifest {
     /// Create a new manifest from a path
     pub fn from_path(path: impl AsRef<Path>) -> miette::Result<Self> {
+        let manifest_path = dunce::canonicalize(path.as_ref()).into_diagnostic()?;
         let contents = std::fs::read_to_string(path.as_ref()).into_diagnostic()?;
-        Self::from_str(path.as_ref(), contents)
+        Self::from_str(manifest_path.as_ref(), contents)
     }
 
     /// Return the toml manifest file name ('pixi.toml' or 'pyproject.toml')
